@@ -25,3 +25,38 @@ graph TD
     style L fill:#fbcfe8,stroke:#db2777
     style W fill:#fee2e2,stroke:#b91c1c
 ```
+```mermaid
+graph TD
+    subgraph "Hardware Layer"
+        A["Raspberry Pi"] -->|"I2C Bus"| B["MPU9250 (IMU)"]
+        A -->|"I2C Bus"| C["BME280 (Temp/Humid/Press)"]
+        A -->|"I2C Bus"| D["ENS160 + AHT21 (Air Quality)"]
+    end
+
+    subgraph "Kernel Space (Driver Module)"
+        E["I2C Subsystem"] -->|"Register Clients"| F["Sensor Drivers"]
+        F -->|"Timer/Workqueue Sampling"| G["Shared Buffer (mmap)"]
+        F -->|"Interrupt Handling (e.g., MPU FIFO)"| H["Wait Queues"]
+        G -->|"Wake Up"| I["User Space Interface (ioctl/poll)"]
+        J["Power Management (Runtime PM)"] --> F
+    end
+
+    subgraph "User Space (Multi-Threaded App)"
+        K["Listener Thread (epoll on Driver)"] -->|"Read Data"| L["Data Fusion Thread Pool"]
+        L -->|"Process (Kalman Filter)"| M["Publisher-Subscriber Queue"]
+        M -->|"IPC/Socket"| N["GUI/Cloud Sender Thread"]
+        M -->|"Mutex/Cond Var Sync"| O["Logging Thread"]
+        P["Watchdog Supervisor Thread"] -->|"Monitor"| L
+        Q["Rate Limiter"] -->|"Throttle"| K
+    end
+
+    subgraph "External Integration"
+        N --> R["Cloud Server"]
+        N --> S["Local GUI"]
+    end
+
+    A --> E
+    I --> K
+    style E fill:#f9f,stroke:#333,stroke-width:2px
+    style K fill:#bbf,stroke:#333,stroke-width:2px
+```
