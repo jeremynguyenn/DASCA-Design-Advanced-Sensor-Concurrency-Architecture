@@ -1,0 +1,40 @@
+/dts-v1/;
+/plugin/;
+
+// Comment: Device Tree Overlay cho I2C sensors trên Raspberry Pi, hỗ trợ MPU9250, BME280, ENS160, AHT21. Đảm bảo I2C bus 1 enabled.
+// Bổ sung: Hỗ trợ interrupt cho concurrency (V.16), tương thích với multi-core affinity (V.15).
+
+ / {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&i2c1>;
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+
+            mpu9250@68 {
+                compatible = "invensense,mpu9250";
+                reg = <0x68>;
+                interrupt-parent = <&gpio>;
+                interrupts = <17 0x8>; // GPIO17, rising edge
+            };
+
+            bme280@76 {
+                compatible = "bosch,bme280";
+                reg = <0x76>;
+            };
+
+            ens160@52 {
+                compatible = "scio-sense,ens160";
+                reg = <0x52>;
+            };
+
+            aht21@38 {
+                compatible = "amphenol,aht21";
+                reg = <0x38>;
+            };
+        };
+    };
+};
