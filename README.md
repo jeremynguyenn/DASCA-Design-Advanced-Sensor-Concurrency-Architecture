@@ -269,7 +269,7 @@ end note
 <img width="2553" height="1441" alt="image" src="https://github.com/user-attachments/assets/0163f4e2-af15-4b32-b231-d57d2372de38" />
 
 
-# Outline Hoàn Chỉnh Về Concurrency Trong Linux & Embedded Systems
+# Outline Hoàn Chỉnh Về Concurrency  Linux Embedded Systems
 
 Dưới đây là outline hoàn chỉnh, được mở rộng dựa trên nội dung gốc bạn cung cấp, với các bổ sung để đạt mức "expert design architect concurrency". Tôi đã tích hợp các phần mới để tập trung vào performance, security, testing, embedded-specific (liên quan Raspberry Pi và I2C sensors), và một level mới "Mastery Level" để làm cho nó production-ready. Outline được tổ chức theo các level từ Beginner đến Mastery, với các chủ đề con chi tiết hơn.
 
