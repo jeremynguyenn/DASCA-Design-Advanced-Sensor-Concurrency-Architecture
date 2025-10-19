@@ -10,6 +10,61 @@ F --> G[7️⃣ Real-time & Tracing]
 G --> H[8️⃣ System Engineering & Deployment]
 H --> I[9️⃣ Ứng dụng mở rộng]
 ```
+
+### Technologies and Techniques Used
+
+This project demonstrates a wide range of Linux kernel and user-space development techniques, focusing on concurrency, sensor integration, and real-time data processing on Raspberry Pi.
+
+#### Kernel Space Techniques
+- ✅ Device Tree Overlays (DTO) for hardware configuration (I2C bus enabling, interrupt mapping).
+- ✅ I2C Kernel Drivers with regmap for register access.
+- ✅ Character Devices (/dev/) with file operations (read, poll, mmap).
+- ✅ Workqueues and Delayed Work for deferred sensor sampling.
+- ✅ Tasklets as bottom-half interrupt handlers.
+- ✅ Spinlocks (with IRQ save) for critical section protection.
+- ✅ Atomic Variables for lock-free data ready signaling.
+- ✅ Wait Queues and Poll for user-space notification.
+- ✅ Completions for synchronization between work and reads.
+- ✅ DMA Coherent Buffers for shared memory (mmap support).
+- ✅ Memory Barriers (__sync_synchronize()) for multi-core consistency.
+- ✅ PM Runtime for power management in drivers.
+- ✅ Debugfs and Sysfs for metrics and status monitoring.
+- ✅ Interrupt Handling (IRQ for MPU9250, rising edge).
+- ✅ Compensation Algorithms (e.g., temperature/pressure/humidity in BME280).
+- ✅ CRC Checks and Error Handling (e.g., in ENS160/AHT21).
+- ✅ Module Build/Install via Makefile (obj-m, depmod).
+- ✅ Placeholders for Advanced: RCU (lock-free reads), eBPF (bottlenecks profiling), Buffer Overflow Checks.
+
+#### User Space Techniques
+- ✅ Daemonization (fork, setsid, umask, redirect stdio).
+- ✅ Signal Handling (SIGINT, SIGTERM, SIGALRM) with sigaction.
+- ✅ Multi-Threading with Pthreads (creation, affinity, scheduling policies: FIFO/RR).
+- ✅ Thread Synchronization: Mutexes (recursive), Condition Variables, RW Locks, Semaphores (bounded).
+- ✅ Atomic Operations (stdatomic.h) for lock-free queue size management.
+- ✅ Barrier Synchronization (pthread_barrier) for thread startup.
+- ✅ Epoll for I/O multiplexing on /dev/ devices.
+- ✅ Timerfd for periodic signaling (10Hz sampling).
+- ✅ Thread-Local Storage (__thread) for buffers.
+- ✅ Queues (Linked Lists) for data buffering (raw and processed).
+- ✅ Data Fusion with Simple Kalman Filter.
+- ✅ Circuit Breaker Pattern for queue overflow handling.
+- ✅ Unix Domain Sockets for IPC (bind, listen, accept, send).
+- ✅ Cleanup Handlers (pthread_cleanup_push/pop) for resource release.
+- ✅ Watchdog Thread for deadlock detection (trylock checks).
+- ✅ Logging with Syslog for daemon errors/warnings.
+- ✅ CPU Affinity (sched_setaffinity) for multi-core optimization.
+- ✅ Cancellation Points and Types (deferred/async) for thread control.
+- ✅ Zombie Prevention (waitpid WNOHANG).
+- ✅ Placeholders for: RCU emulation (user-space), Fuzzing/Testing Targets in Makefile.
+
+#### General Project Techniques
+- ✅ Makefile for Dual Build (kernel modules + user app), Install, Clean, Test (Google Test), Fuzz (LibFuzzer), Deploy (Yocto-like).
+- ✅ Security: Comments on AppArmor, Secure Boot, ASLR.
+- ✅ Testing/Optimization: Comments on Stress-ng, Perf, Integration Tests.
+- ✅ Future Enhancements: Rust Kernel Modules, FreeRTOS Alternative, eBPF Hooks.
+
+This checklist highlights the project's focus on concurrency architecture (V.15-V.24 as per code comments), ensuring thread-safety, real-time performance, and scalability.
+
 ```mermaid
 graph TD
     A[MPU9250 Sensor] -->|I2C| K[Kernel Driver]
