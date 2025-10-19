@@ -64,6 +64,57 @@ This project demonstrates a wide range of Linux kernel and user-space developmen
 - ✅ Future Enhancements: Rust Kernel Modules, FreeRTOS Alternative, eBPF Hooks.
 
 This checklist highlights the project's focus on concurrency architecture (V.15-V.24 as per code comments), ensuring thread-safety, real-time performance, and scalability.
+```mermaid
+sequenceDiagram
+    participant Hardware as Hardware Sensors (MPU9250, BME280, ENS160, AHT21)
+    participant Kernel as Kernel Drivers (mpu9250_driver.c, bme280_driver.c, ens160_driver.c)
+    participant SensorsThread as User Sensors Thread (user_sensors.c)
+    participant ProcessingThread as Processing Thread (user_processing.c)
+    participant IPCThread as IPC Thread (user_ipc.c)
+    participant Client as External Client (GUI/Cloud)
+
+    Note over Hardware, Client: Overall Flow: Data Sampling, Processing, Fusion, IPC
+
+    loop Periodic Sampling (Timerfd or IRQ)
+        Hardware->>Kernel: Data ready (Interrupt for MPU or Polling)
+        Kernel->>Kernel: Schedule Delayed Work (sample_work)
+        Kernel->>Kernel: Execute sample_data() in Workqueue
+        Kernel->>Kernel: Lock (spin_lock_irqsave), Read Registers via I2C/Regmap
+        Kernel->>Kernel: Compensate/Calibrate Data (e.g., compensate_temp for BME)
+        Kernel->>Kernel: Store in data_buffer, Memory Barrier (__sync_synchronize)
+        Kernel->>Kernel: Atomic Set data_ready, Wake Up Wait Queue
+        Kernel->>Kernel: Tasklet Schedule, Complete sample_complete
+    end
+
+    SensorsThread->>Kernel: epoll_wait on /dev/ devices (EPOLLIN)
+    Kernel->>SensorsThread: Data available (via poll/read)
+    SensorsThread->>SensorsThread: Read from /dev/ (non-block, TLS buffer)
+    alt Queue Full (Circuit Breaker V.20)
+        SensorsThread->>SensorsThread: Skip read, Log Warning
+    else
+        SensorsThread->>ProcessingThread: Publish to Raw Queue (publish_to_raw_queue, RWLock, Mutex, Atomic Increment)
+    end
+
+    ProcessingThread->>ProcessingThread: Wait on Raw Queue (Cond Wait, RWLock/Rcu Read Lock)
+    ProcessingThread->>ProcessingThread: Consume from Raw Queue, Atomic Decrement
+    alt Have All Sensor Data (MPU, BME, ENS)
+        ProcessingThread->>ProcessingThread: Data Fusion (Average, Kalman Filter V.18)
+        ProcessingThread->>IPCThread: Publish to Processed Queue (publish_to_processed_queue, RWLock, Mutex, Atomic Increment)
+    end
+
+    alt Queue Size > 100 (Circuit Breaker V.20)
+        ProcessingThread->>ProcessingThread: Skip Processing, Sleep, Log
+    end
+
+    IPCThread->>IPCThread: Accept Connection on Unix Socket
+    Client->>IPCThread: Connect to /tmp/sensor_ipc.sock
+    IPCThread->>IPCThread: Lock Processed Queue Mutex
+    IPCThread->>IPCThread: Send Fused Data to Client
+    IPCThread->>IPCThread: Free Msg, Unlock Mutex
+
+    Note over Main: Watchdog Thread checks for Deadlocks (trylock), Signals if Detected
+    Note over Main: Main Thread (user_main.c) Manages Daemon, Affinity, Scheduling
+```
 
 ```mermaid
 graph TD
